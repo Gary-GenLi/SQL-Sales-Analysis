@@ -35,3 +35,4 @@ The project utilizes a dataset with the following main tables:
 ![20240811034654](https://github.com/user-attachments/assets/4f58b234-dfad-4eef-b1a2-7495d0da9797)
 
 ## 5.Lesson Learned
+In this project, I leveraged my expertise as a business analyst working with SQL and large datasets, focusing on optimizing SQL performance, ensuring data quality, and applying business understanding. By implementing techniques such as indexing and query optimization, I enhanced SQL efficiency and resource utilization. I also emphasized the importance of maintaining data cleanliness, accuracy, and consistency to support meaningful analysis. Additionally, I demonstrated my ability to understand business context and requirements, translating them into actionable SQL queries that provide relevant insights.
