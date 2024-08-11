@@ -10,26 +10,28 @@
 The main objective of this project is to solve ad hoc problems from customers and our business department using SQL queries. It involves common SQL statements such as SELECT, JOIN, WHERE, GROUP BY, etc., to extract and analyze data from different tables and categories. Additionally, some more complex requirements have been achieved using subqueries and Common Table Expressions (CTEs).
 ## 2.Specifications
  
-## 3.KPIs
-The dataset consists of a total of 9 tables, including 3 source data tables and 6 data mart tables.
+## 3.Data Schema
+The project utilizes a dataset with the following main tables:
 
-**Orders:** This fact table contains information such as customer code, order code, order date, postal code, last product update, and product code
+**Customer:** Contains information about customers, including CustomerID, FirstName, LastName, CompanyName, and EmailAddress.
 
-**People:** Provides information about person (cutomer name) and regions
+**Address:** Holds address details such as AddressID, AddressLine1, AddressLine2, City, StateProvince, CountyRegion, and PostalCode.
 
-**Returns:** Contains data on order codes and indicates whether a product has been returned
+**CustomerAddress:** Contains information about customers' addresses, including CustomerID, AddressID, AddressType.
 
-**Calender:** Includes a single record for each date used in the analysis
+**SalesOrderHeader:** Contains sales order information, including SalesOrderID, OrderDate, CustomerID, ShipToAddressID, SubTotal, TaxAmt, and Freight.
 
-**Customer:** Generated from the order table, it includes details such as customer code, customer name, and segment
+**SalesOrderDetail:** Contains the details of each sales order, including SalesOrderDetailID, OrderQty, ProductID, UnitPrice, and UnitPriceDiscount.
 
-**Date Type:** Specifies the type of date, either order date or ship date
+**Product:** Contains product details like ProductID, Name, Color, ListPrice, Size, Weight, ProductModelID, and ProductCategoryID.
 
-**Last Refresh:** Each time the dashboard is refreshed, this table updates and returns the latest refresh time
+**ProductModel:** Holds information about different product models and their names.
 
-**Product:** Generated from the order table with a predefined filter, it includes product details such as product code, category, sub-category, product name, and last product update
+**ProductCategory:** Provides product category information, including ProductCategoryID, ParentProductCategoryID, and Name.
 
-**Region:** Generated from the order table, this table contains information about postal code, country, state, city, and region
+**ProductDescription:** Contains descriptions of product models in different cultures.
+
+**ProductModelProductDescription:** Associates product models with their corresponding descriptions.
 ## 4.Modeling 
 
 ## 5.Dashboard
