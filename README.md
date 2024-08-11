@@ -4,8 +4,7 @@
 - [2.Specifications](#2Specifications)
 - [3.KPIs](#3KPIs)
 - [4.Modeling](#4Modeling)
-- [5.Dashboard](#5Results)
-- [6.Lesson Learned](#6Lesson-Learned)
+- [5.Lesson Learned](#5Lesson-Learned)
 ## 1.Introduction
 The main objective of this project is to solve ad hoc problems from customers and our business department using SQL queries. It involves common SQL statements such as SELECT, JOIN, WHERE, GROUP BY, etc., to extract and analyze data from different tables and categories. Additionally, some more complex requirements have been achieved using subqueries and Common Table Expressions (CTEs).
 ## 2.Specifications
@@ -33,7 +32,6 @@ The project utilizes a dataset with the following main tables:
 
 **ProductModelProductDescription:** Associates product models with their corresponding descriptions.
 ## 4.Modeling 
+![20240811034654](https://github.com/user-attachments/assets/4f58b234-dfad-4eef-b1a2-7495d0da9797)
 
-## 5.Dashboard
-
-## 6.Lesson Learned
+## 5.Lesson Learned
