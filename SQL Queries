@@ -1,0 +1,438 @@
+1)
+/*
+Show the first name and the email address of customer with CompanyName 'Bike World'
+*/
+SELECT FirstName, EmailAddress, CompanyName
+  FROM SAW.Customer
+WHERE CompanyName = 'Bike World'
+GROUP BY FirstName, EmailAddress, CompanyName
+
+2)
+/*
+Show the CompanyName for all customers with an address in City 'Dallas'.
+*/
+SELECT DISTINCT T1.CompanyName
+  FROM SAW.Customer AS T1 JOIN SAW.CustomerAddress AS T2
+    ON T1.CustomerID = T2.CustomerID
+	   JOIN SAW.Address T3
+	ON T2.AddressID = T3.AddressID
+WHERE City = 'Dallas'
+GROUP BY T1.CompanyName
+
+/* Result:
+-- CompanyName
+-- Town Industries
+-- Elite Bikes
+-- Third Bike Store
+-- Unsurpassed Bikes
+-- Rental Bikes
+*/
+
+
+3)
+/*
+How many items with ListPrice more than $1000 have been sold?
+*/
+SELECT SUM(T2.OrderQty) AS Num
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+    ON T1.ProductID = T2.ProductID
+WHERE ListPrice > 1000
+
+/*Result:
+-- Num
+-- 41
+*/
+
+4)
+/*
+Give the CompanyName of those customers with orders over $100000. Include the subtotal plus tax plus freight.
+*/
+SELECT T1.CompanyName
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+WHERE SubTotal + TaxAmt + Freight > 100000
+GROUP BY T1.CompanyName
+
+/*Result:
+-- CompanyName
+-- Action Bicycle Specialists
+-- Metropolitan Bicycle Supply
+*/
+
+5)
+/*
+Find the number of left racing socks ('Racing Socks, L') ordered by CompanyName 'Riding Cycles'
+*/
+Select CN.CompanyName, PN.OrderQty
+  From (Select SalesOrderID, OrderQty
+          From SalesOrderDetail As SOD
+          Join Product p
+            On SOD.ProductID = p.ProductID
+         Where p.Name = 'Racing Socks, L') As PN
+   Join (Select SalesOrderID, SOH.CustomerID, CompanyName
+           From SalesOrderHeader SOH
+           Join Customer c
+             On SOH.CustomerID = c.CustomerID
+          Where CompanyName = 'Riding Cycles') As CN
+             On PN.SalesOrderID = CN.SalesOrderID;
+
+/* Result:
+--  numRacingSockL
+--  3
+*/
+
+
+6)
+/*
+A "Single Item Order" is a customer order where only one item is ordered. Show the SalesOrderID and the UnitPrice for every Single Item Order.
+*/
+SELECT sod.SalesOrderID, ProductID, UnitPrice
+  FROM SalesOrderDetail sod
+  JOIN (SELECT SalesOrderID FROM SalesOrderDEtail GROUP BY SalesOrderID HAVING COUNT(ProductID)=1) oo
+    ON sod.SalesOrderID=oo.SalesOrderID;
+
+/* Result:
+-- SalesOrderID	ProductID	UnitPrice
+-- 71776	907	63.9
+-- 71867	717	858.9
+-- 71917	875	5.39
+-- 71938	973	1020.59
+*/
+
+
+7)
+/*
+Where did the racing socks go? List the product name and the CompanyName for all Customers who ordered ProductModel 'Racing Socks'.
+*/
+SELECT DISTINCT p.Name, c.CompanyName
+           FROM ProductModel pm
+           JOIN Product p on p.ProductModelID = pm.ProductModelID 
+           JOIN SalesOrderDetail od on od.ProductID = P.ProductID 
+           JOIN SalesOrderHeader oh on od.SalesOrderID = oh.SalesOrderID
+           JOIN Customer c on oh.CustomerID = c.CustomerID 
+          WHERE pm.name= 'Racing Socks';
+
+/* Result:
+-- Name	CompanyName
+-- Racing Socks, M	Thrifty Parts and Sales
+-- Racing Socks, M	Sports Products Store
+-- Racing Socks, M	The Bicycle Accessories Company
+-- Racing Socks, M	Remarkable Bike Store
+-- Racing Socks, L	Eastside Department Store
+-- Racing Socks, L	Riding Cycles
+-- Racing Socks, L	Sports Products Store
+-- Racing Socks, L	Essential Bike Works
+-- Racing Socks, L	The Bicycle Accessories Company
+-- Racing Socks, L	Remarkable Bike Store
+*/
+
+
+8)
+/*
+Show the product description for culture 'fr' for product with ProductID 736.
+*/
+SELECT pd.Description, pmpd.culture, P.ProductID
+  FROM ProductDescription pd
+  JOIN ProductModelProductDescription pmpd on pd.ProductDescriptionID = pmpd.ProductDescriptionID
+  JOIN Product p on p.ProductModelID = pmpd.ProductModelID 
+ WHERE pmpd.culture = 'fr' AND P.ProductID = 736;
+
+/* Result:
+-- Description
+-- Le cadre LL en aluminium offre une conduite confortable, une excellente absorption des bosses pour un très bon rapport qualité-prix
+*/
+
+
+9)
+/*
+Use the SubTotal value in SaleOrderHeader to list orders from the largest to the smallest. For each order show the CompanyName and the SubTotal and the total weight of the order.
+*/
+
+SELECT T1.CompanyName, T2.SubTotal, SUM(T3.OrderQty * CAST(T4.Weight AS decimal(19,2))) AS [Total Weight]
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+	   JOIN SAW.SalesOrderDetail T3
+	ON T2.SalesOrderID = T3.SalesOrderID
+	   JOIN SAW.Product T4
+	ON T3.ProductID = T4.ProductID
+WHERE T4.Weight <> 'NULL'
+GROUP BY T1.CompanyName, T2.SubTotal
+ORDER BY T2.SubTotal DESC
+
+/* Result:
+-- CompanyName	SubTotal	Total Weight
+-- Action Bicycle Specialists	108561.83	1133911.56
+-- Metropolitan Bicycle Supply	98278.69	679588.02
+-- Bulk Discount Store	88812.86	34813.05
+-- Eastside Department Store	83858.43	565638.72
+-- Riding Cycles	78029.69	504095.33
+-- Many Bikes Store	74058.81	744328.6
+-- Instruments and Parts Company	63980.99	731576.77
+-- ...
+*/
+
+10)
+/*
+How many products in ProductCategory 'Cranksets' have been sold to an address in 'London'?
+*/
+SELECT SUM(DP.salesQTY) totalProducts
+        FROM (SELECT SalesOrderID, SUM(OrderQty) salesQTY
+	FROM SalesOrderDetail sod
+	JOIN Product p ON sod.ProductID = p.ProductID
+	JOIN ProductCategory pc ON p.ProductCategoryID = pc.ProductCategoryID
+	WHERE pc.Name = 'Cranksets'
+	GROUP BY SalesOrderID) DP
+JOIN (SELECT SalesOrderID
+	FROM SalesOrderHeader soh
+ 	JOIN Address a ON soh.ShipToAddressID = a.AddressID
+ 	WHERE a.City = 'London') HA ON DP.SalesOrderID = HA.SalesOrderID
+GROUP BY DP.SalesOrderID
+      
+/* Result:
+-- numProducts
+-- 9
+*/
+
+
+11)
+/*
+For every customer with a 'Main Office' in Dallas show AddressLine1 of the 'Main Office' and AddressLine1 of the 'Shipping' address - if there is no shipping address leave it blank. Use one row per customer.
+*/
+SELECT T1.CompanyName, T1.[Main office address], ISNULL(T2.[Shipping address], '') AS [Shipping address]
+  FROM (SELECT T11.CompanyName, T12.CustomerID, T13.AddressLine1 AS [Main office address]
+          FROM SAW.Customer T11 JOIN SAW.CustomerAddress T12
+		    ON T11.CustomerID = T12.CustomerID
+		       JOIN SAW.Address T13
+            ON T12.AddressID = T13.AddressID
+         WHERE T12.AddressType = 'Main Office' AND T13.City = 'Dallas') T1
+	   LEFT OUTER JOIN 
+	   (SELECT T21.CompanyName, T22.CustomerID, T23.AddressLine1 AS [Shipping address]
+          FROM SAW.Customer T21 JOIN SAW.CustomerAddress T22
+		    ON T21.CustomerID = T22.CustomerID
+               JOIN SAW.Address T23
+            ON T22.AddressID = T23.AddressID
+			WHERE T22.AddressType = 'Shipping') T2
+       ON T1.CustomerID = T2.CustomerID
+GROUP BY T1.CompanyName, T1.CustomerID, T1.[Main office address], ISNULL(T2.[Shipping address], '')
+
+/* Result:
+-- CompanyName	Main office address	Shipping address
+-- Elite Bikes	Po Box 8259024	9178 Jumping St.
+-- Rental Bikes	99828 Routh Street, Suite 825	
+-- Third Bike Store	2500 North Stemmons Freeway	
+-- Town Industries	P.O. Box 6256916	
+-- Unsurpassed Bikes	Po Box 8035996	
+*/
+
+12)
+/*
+For each order show the SalesOrderID and SubTotal calculated three ways:
+A) From the SalesOrderHeader
+B) Sum of OrderQty*UnitPrice
+C) Sum of OrderQty*ListPrice
+*/
+SELECT oh.SalesOrderID, oh.SubTotal, 
+  SUM (od.OrderQty * od.UnitPrice) as SubTotal_by_UnitPrice,
+  SUM (od.OrderQty * p.ListPrice) as SubTotal_by_ListPrice
+ FROM SalesOrderHeader oh
+ JOIN SalesOrderDetail od on oh.SalesOrderID = od.SalesOrderID 
+ LEFT JOIN Product p on p.ProductID = od.ProductID 
+GROUP BY oh.SalesOrderID, oh.SubTotal;
+
+/* Result:
+-- SalesOrderID	ST1	ST2	ST3
+-- 71774	880.35	713.8	1189.66
+-- 71776	78.81	63.9	106.5
+-- 71780	38418.69	30600.81	56651.56
+-- 71782	39785.33	33319.68	55533.31
+-- 71783	83858.43	68141.99	121625.43
+-- 71784	108561.83	90341.14	151932.58
+-- ...
+*/
+
+
+13)
+/*
+Show the best selling item by value.
+*/
+
+SELECT * 
+FROM (SELECT ProductID, Sum(OrderQty*UnitPrice) AS 'Value', 
+	RANK() OVER (PARTITION BY 1 ORDER BY Sum(OrderQty*UnitPrice) DESC) AS Rank  
+	FROM SalesOrderDetail SOD GROUP BY ProductID) base
+WHERE Rank=1;
+
+/* Result:
+-- Name	Value	rn
+-- Touring-1000 Blue, 60	37191.44	1
+*/
+
+
+14)
+/*
+Show how many orders are in the following ranges (in $):
+    RANGE      Num Orders      Total Value
+    0-  99
+  100- 999
+ 1000-9999
+10000-
+*/
+SELECT X.Range,  SUM(1) AS '# Of Orders', SUM(X.SubTotal) AS 'Total Value'
+  FROM (SELECT CASE WHEN SubTotal < 100 Then '0-99'
+	WHEN SubTotal Between 100 And 999 Then '100-999'
+	WHEN SubTotal Between 1000 And 9999 Then '1000-9999'
+	WHEN SubTotal > 10000 Then '10000-' Else '' End As 'Range', 
+	1 AS 'NumOrder', SubTotal
+	From SalesOrderHeader As SOD) AS X
+GROUP BY X.Range;
+
+/* Result:
+-- RANGE	Num orders	Total Value
+-- 0 - 99	129	6576.02
+-- 100-999	225	90859.33
+-- 1000-9999	138	433813.21
+-- 10000-	8	113661.13
+*/
+
+
+15)
+/*
+Identify the three most important cities. Show the break down of top level product category against city.
+*/
+SELECT TT1.City AS [Three Most Important Cities], TT2.Name AS [Top Level Product Category Name], TT1.[Total Value1] AS [Total Value]
+  FROM (SELECT * 
+          FROM (SELECT *, RANK() OVER(PARTITION BY 1 ORDER BY TTTT1.[Total Value1] DESC) AS RK1 
+                  FROM (SELECT T1.City, SUM(SubTotal) AS [Total Value1]
+                          FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
+	                        ON T1.AddressID = T2.ShipToAddressID
+                        GROUP BY T1.City
+	                   ) AS TTTT1
+	           ) AS TTT1
+        WHERE RK1 < 4
+       ) TT1 
+LEFT OUTER JOIN 
+  (SELECT T.City, T.Name, T.[Total Value2]
+     FROM (SELECT * , ROW_NUMBER() OVER(PARTITION BY T11.City ORDER BY T11.[Total Value2] DESC) AS RK2
+             FROM (SELECT T1.City, SUM(T3.OrderQty * T3.UnitPrice) AS [Total Value2], T5.Name
+                     FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
+	                   ON T1.AddressID = T2.ShipToAddressID
+	                      JOIN SAW.SalesOrderDetail T3
+	                   ON T2.SalesOrderID = T3.SalesOrderID
+	                      JOIN SAW.Product T4
+	                   ON T3.ProductID = T4.ProductID
+	                      JOIN SAW.ProductCategory T5
+	                   ON T4.ProductCategoryID = T5.ProductCategoryID
+                   GROUP BY T5.Name, T1.City
+				  ) T11
+		  ) T
+   WHERE RK2 = 1
+  ) TT2
+ON TT1.City = TT2.City
+ORDER BY [Total Value] DESC
+
+/* Result:
+-- Three Most Important Cities	Top Level Product Category Name	Total Value	
+-- London	Mountain Bikes	50881.99	
+-- Union City	Road Bikes	53478.76	
+-- Woolston	Touring Bikes	77040.15	
+*/
+
+16)
+/*
+List the SalesOrderNumber for the customer 'Good Toys' 'Bike World'
+*/
+SELECT SalesOrderID AS SalesOrderNumber, Customer.CompanyName
+  FROM SalesOrderHeader 
+  JOIN Customer ON SalesOrderHeader.CustomerID = Customer.CustomerID
+WHERE CompanyName IN ('Good Toys', 'Bike World')
+
+/* Result:  
+-- SalesOrderID	CompanyName
+--               Bike World
+-- 71774	 Good Toys
+*/
+
+
+17)
+/*
+List the ProductName and the quantity of what was ordered by 'Futuristic Bikes'
+*/
+SELECT T1.Name AS [ProductName Ordered by 'Futuristic Bikes'], SUM(T2.OrderQTY) AS [Quantity]
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+    ON T1.ProductID = T2.ProductID
+	   JOIN SAW.SalesOrderHeader T3
+	ON T2.SalesOrderID = T3.SalesOrderID
+	   JOIN SAW.Customer T4
+	ON T3.CustomerID = T4.CustomerID
+WHERE T4.CompanyName = 'Futuristic Bikes'
+GROUP BY T1.Name
+
+/* Result:
+-- Name	SUM
+-- ML Mountain Seat/Saddle	2
+-- Long-Sleeve Logo Jersey, L	2
+-- Classic Vest, S	3
+*/
+
+18)
+/*
+List the name and addresses of companies containing the word 'Bike' (upper or lower case) and companies containing 'cycle' (upper or lower case). Ensure that the 'bike's are listed before the 'cycles's.
+*/
+SELECT (CASE WHEN UPPER(CompanyName) LIKE '%BIKE%' THEN 'Bike'
+        ELSE 'Cycle' END) AS Keyword,
+	CompanyName, AddressLine1
+   FROM Customer c
+   JOIN CustomerAddress ca ON c.CustomerID = ca.CustomerID AND ca.AddressType = 'Main Office'
+   JOIN Address a ON ca.AddressID = a.AddressID
+  WHERE UPPER(CompanyName) LIKE '%BIKE%' or UPPER(CompanyName) LIKE '%CYCLE%'
+ORDER BY Keyword
+
+/* Result:
+-- CompanyName	AddressLine1	AddressLine2	City	StateProvince	CountyRegion	PostalCode
+-- A Bike Store	2251 Elliot Avenue	NULL	Seattle	Washington	United States	98104
+-- A Typical Bike Shop	One Dancing, Rr No. 25	Box 8033	Round Rock	Texas	United States	78664
+-- Advanced Bike Components	12345 Sterling Avenue	NULL	Irving	Texas	United States	75061
+-- Area Bike Accessories	6900 Sisk Road	NULL	Modesto	California	United States	95354
+-- Associated Bikes	5420 West 22500 South	NULL	Salt Lake City	Utah	United States	84101
+-- Authorized Bike Sales and Rental	490 Ne 4th St	NULL	Renton	Washington	United States	98055
+-- Basic Bike Company	15 East Main	NULL	Port Orchard	Washington	United States	98366
+-- Best o' Bikes	250880 Baur Blvd	NULL	Saint Louis	Missouri	United States	63103
+-- Big-Time Bike Store	9909 W. Ventura Boulevard	NULL	Camarillo	California	United States	93010
+-- Bike Dealers Association	9952 E. Lohman Ave.	NULL	Las Cruces	New Mexico	United States	88001
+*/
+
+
+19)
+/*
+Show the total order value for each CountryRegion. List by value with the highest first.
+*/
+SELECT T1.CountyRegion AS [CountryRegion], SUM(T2.SubTotal) AS [Total Order Value]
+  FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.AddressID = T2.ShipToAddressID
+GROUP BY T1.CountyRegion
+ORDER BY SUM(T2.SubTotal) DESC
+
+/* Result:
+-- CountyRegion	SUM
+-- United Kingdom	518096.42
+-- United States	347336.69
+*/
+
+20)
+/*
+Find the best customer in each region.
+*/
+SELECT CountyRegion, CompanyName, SubTotal
+  FROM (SELECT CountyRegion, CustomerID, SUM(SubTotal) AS 'SubTotal',
+		Rank() over (PARTITION BY CountyRegion ORDER BY SUM(SubTotal) DESC) AS Rnum
+          FROM SalesOrderHEader AS SOH
+	  JOIN Address AS AD ON SOH.ShipToAddressID = AD.AddressID
+	 GROUP BY CountyRegion, CustomerID) AS SBQ
+   JOIN Customer CU ON SBQ.CustomerID = CU.CustomerID
+WHERE Rnum = 1
+
+/* Result:
+-- CountyRegion	CustomerID	reTotal
+-- United Kingdom	448	108561.83
+-- United States	24	83858.43
+*/
