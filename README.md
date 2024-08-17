@@ -2,7 +2,7 @@
 ## Table of Contents
 - [1.Introduction](#1Introduction)
 - [2.Specifications](#2Specifications)
-- [3.Data_Schema](#3Data_Schema)
+- [3.Data Schema](#3Data-Schema)
 - [4.Modeling](#4Modeling)
 - [5.Lesson Learned](#5Lesson-Learned)
 ## 1.Introduction
