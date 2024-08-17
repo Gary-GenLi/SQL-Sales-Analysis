@@ -1,0 +1,425 @@
+1)
+/*
+Show the first name and the email address of customer with CompanyName 'Bike World'
+*/
+SELECT FirstName, EmailAddress, CompanyName
+  FROM SAW.Customer
+WHERE CompanyName = 'Bike World'
+GROUP BY FirstName, EmailAddress, CompanyName
+
+2)
+/*
+Show the CompanyName for all customers with an address in City 'Dallas'.
+*/
+SELECT DISTINCT T1.CompanyName
+  FROM SAW.Customer AS T1 JOIN SAW.CustomerAddress AS T2
+    ON T1.CustomerID = T2.CustomerID
+	   JOIN SAW.Address T3
+	ON T2.AddressID = T3.AddressID
+WHERE City = 'Dallas'
+GROUP BY T1.CompanyName
+
+3)
+/*
+How many items with ListPrice more than $1000 have been sold?
+*/
+SELECT SUM(T2.OrderQty) AS Num
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+    ON T1.ProductID = T2.ProductID
+WHERE ListPrice > 1000
+
+4)
+/*
+Give the CompanyName of those customers with orders over $100000. Include the subtotal plus tax plus freight.
+*/
+SELECT T1.CompanyName
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+WHERE SubTotal + TaxAmt + Freight > 100000
+GROUP BY T1.CompanyName
+
+5)
+/*
+Find the number of left racing socks ('Racing Socks, L') ordered by CompanyName 'Riding Cycles'
+*/
+SELECT T1.CompanyName, T4.[Name], T3.OrderQty
+FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+  ON T1.CustomerID = T2.CustomerID
+     JOIN SAW.SalesOrderDetail T3
+  ON T2.SalesOrderID = T3.SalesOrderID
+     JOIN SAW.Product T4
+  ON T3.ProductID = T4.ProductID
+WHERE T4.[Name] LIKE '%Racing Socks, L%' AND T1.CompanyName LIKE '%Riding Cycles%'
+GROUP BY T1.CompanyName, T4.[Name], T3.OrderQty
+
+6)
+/*
+A "Single Item Order" is a customer order where only one item is ordered. Show the SalesOrderID and the UnitPrice for every Single Item Order.
+*/
+SELECT T1.SalesOrderID, T2.UnitPrice, T1.OrderQuantity
+  FROM (SELECT SalesOrderID, SUM(OrderQty) AS OrderQuantity
+          FROM SAW.SalesOrderDetail 
+		GROUP BY SalesOrderID HAVING SUM(OrderQty)= 1) T1 
+  JOIN SAW.SalesOrderDetail T2
+  ON T1.SalesOrderID = T2.SalesOrderID
+ORDER BY T1.SalesOrderID
+
+7)
+/*
+Where did the racing socks go? List the product name and the CompanyName for all Customers who ordered ProductModel 'Racing Socks'.
+*/
+SELECT T1.Name, T4.CompanyName, T5.Name AS [ProductModel]
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2 
+    ON T1.ProductID = T2.ProductID
+	   JOIN SAW.SalesOrderHeader T3
+	ON T2.SalesOrderID = T3.SalesOrderID
+	   JOIN SAW.Customer T4
+	ON T3.CustomerID = T4.CustomerID
+	   JOIN SAW.ProductModel T5
+	ON T1.ProductModelID = T5.ProductModelID
+WHERE T5.Name = 'Racing Socks'
+GROUP BY T1.Name, T4.CompanyName, T5.Name
+
+
+8)
+/*
+Show the product description for culture 'fr' for product with ProductID 736.
+*/
+SELECT T1.ProductID, T3.Description, T2.Culture
+  FROM SAW.Product T1 JOIN SAW.ProductModelProductDescription T2
+	ON T1.ProductModelID = T2.ProductModelID
+	   JOIN SAW.ProductDescription T3
+	ON T2.ProductDescriptionID = T3.ProductDescriptionID
+WHERE T2.Culture LIKE '%fr%' AND T1.ProductID = 736
+
+9)
+/*
+Use the SubTotal value in SaleOrderHeader to list orders from the largest to the smallest. For each order show the CompanyName and the SubTotal and the total weight of the order.
+*/
+
+SELECT T1.CompanyName, T2.SubTotal, SUM(T3.OrderQty * CAST(T4.Weight AS decimal(19,2))) AS [Total Weight]/*T3.OrderQty * CAST(T4.Weight AS decimal(19,2)) */
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+	   JOIN SAW.SalesOrderDetail T3
+	ON T2.SalesOrderID = T3.SalesOrderID
+	   JOIN SAW.Product T4
+	ON T3.ProductID = T4.ProductID
+WHERE T4.Weight <> 'NULL'
+GROUP BY T1.CompanyName, T2.SubTotal
+ORDER BY T2.SubTotal DESC
+
+10)
+/*
+How many products in ProductCategory 'Cranksets' have been sold to an address in 'London'?
+*/
+SELECT T1.Name AS [ProductCategory], SUM(T3.OrderQty) AS [Quantity], T5.City
+  FROM SAW.ProductCategory T1 JOIN SAW.Product T2
+    ON T1.ProductCategoryID = T2.ProductCategoryID
+	   JOIN SAW.SalesOrderDetail T3
+	ON T2.ProductID = T3.ProductID
+	   JOIN SAW.SalesOrderHeader T4
+	ON T3.SalesOrderID = T4.SalesOrderID
+	   JOIN SAW.Address T5
+	ON T4.ShipToAddressID = T5.AddressID
+WHERE T1.Name = 'Cranksets' AND T5.City = 'London'
+GROUP BY T1.Name, T5.City
+
+
+11)
+/*
+For every customer with a 'Main Office' in Dallas show AddressLine1 of the 'Main Office' and AddressLine1 of the 'Shipping' address - if there is no shipping address leave it blank. Use one row per customer.
+*/
+SELECT T1.CompanyName, T1.CustomerID, T1.[Main office address], ISNULL(T2.[Shipping address], '') AS [Shipping address]
+  FROM (SELECT T11.CompanyName, T12.CustomerID, T13.AddressLine1 AS [Main office address]
+          FROM SAW.Customer T11 JOIN SAW.CustomerAddress T12
+		    ON T11.CustomerID = T12.CustomerID
+		       JOIN SAW.Address T13
+            ON T12.AddressID = T13.AddressID
+         WHERE T12.AddressType = 'Main Office' AND T13.City = 'Dallas') T1
+	   LEFT OUTER JOIN 
+	   (SELECT T21.CompanyName, T22.CustomerID, T23.AddressLine1 AS [Shipping address]
+          FROM SAW.Customer T21 JOIN SAW.CustomerAddress T22
+		    ON T21.CustomerID = T22.CustomerID
+               JOIN SAW.Address T23
+            ON T22.AddressID = T23.AddressID
+			WHERE T22.AddressType = 'Shipping') T2
+       ON T1.CustomerID = T2.CustomerID
+GROUP BY T1.CompanyName, T1.CustomerID, T1.[Main office address], ISNULL(T2.[Shipping address], '')
+
+12)
+/*
+For each order show the SalesOrderID and SubTotal calculated three ways:
+A) From the SalesOrderHeader
+B) Sum of OrderQty*UnitPrice
+C) Sum of OrderQty*ListPrice
+*/
+SELECT SalesOrderID, SubTotal
+  FROM SAW.SalesOrderHeader
+ORDER BY SalesOrderID
+
+SELECT T1.SalesOrderID, SUM(T2.OrderQTY * CAST(T2.UnitPrice AS decimal(19, 2))) AS [SubTotal]
+  FROM SAW.SalesOrderHeader T1 LEFT OUTER JOIN SAW.SalesOrderDetail T2
+    ON T1.SalesOrderID = T2.SalesOrderID
+GROUP BY T1.SalesOrderID
+
+
+SELECT T1.SalesOrderID, SUM(T2.OrderQTY * CAST(T3.ListPrice AS decimal(19, 2))) AS [SubTotal]
+  FROM SAW.SalesOrderHeader T1 LEFT OUTER JOIN SAW.SalesOrderDetail T2
+    ON T1.SalesOrderID = T2.SalesOrderID
+	   LEFT OUTER JOIN SAW.Product T3
+	ON T2.ProductID = T3.ProductID
+GROUP BY T1.SalesOrderID
+
+
+SELECT T1.SalesOrderID, T1.SubTotal, SUM(T2.OrderQTY * CAST(T2.UnitPrice AS decimal(19, 2))) AS [SubTotal UP], SUM(T2.OrderQTY * CAST(T3.ListPrice AS decimal(19, 2))) AS [SubTotal LP]
+  FROM SAW.SalesOrderHeader T1 LEFT OUTER JOIN SAW.SalesOrderDetail T2
+    ON T1.SalesOrderID = T2.SalesOrderID
+	   LEFT OUTER JOIN SAW.Product T3
+	ON T2.ProductID = T3.ProductID
+GROUP BY T1.SalesOrderID, T1.SubTotal
+
+13)
+/*
+Show the best selling item by value.
+*/
+SELECT TOP 1 T1.Name, SUM(T2.OrderQTY * (CAST(T2.UnitPrice AS decimal(19, 2)))) AS [Value]
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+    ON T1.ProductID = T2.ProductID
+GROUP BY T1.Name
+ORDER BY [Value] DESC
+
+SELECT T1.Name, SUM(T2.OrderQTY * (CAST(T2.UnitPrice AS decimal(19, 2)))) AS [Value]
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+    ON T1.ProductID = T2.ProductID
+GROUP BY T1.Name
+ORDER BY [Value] DESC
+LIMIT 1
+
+SELECT T.Name, [Value]
+  FROM(SELECT T1.Name, SUM(T2.OrderQty * (CAST(T2.UnitPrice AS decimal (19,2)))) AS [Value], 
+              RANK() OVER (PARTITION BY 1 ORDER BY SUM(T2.OrderQty * (CAST(T2.UnitPrice AS decimal (19,2)))) DESC) AS RK
+         FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+           ON T1.ProductID = T2.ProductID
+       GROUP BY T1.Name
+	  ) AS T
+WHERE RK = 1
+
+14)
+/*
+Show how many orders are in the following ranges (in $):
+    RANGE      Num Orders      Total Value
+    0-  99
+  100- 999
+ 1000-9999
+10000-
+*/
+SELECT [RANGE] = '0- 99', COUNT(SalesOrderID) AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) <= 99
+UNION
+SELECT [RANGE] = '100- 999', COUNT(SalesOrderID) AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) >= 100 AND CAST(SubTotal AS decimal(19, 4)) <=999
+UNION
+SELECT [RANGE] = '1000- 9999', COUNT(SalesOrderID) AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) >= 1000 AND CAST(SubTotal AS decimal(19, 4)) <=9999
+UNION
+SELECT [RANGE] = '10000-', COUNT(SalesOrderID) AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) >= 10000
+
+SELECT T.[RANGE], COUNT(T.SalesOrderID) AS [Num Orders], SUM(T.SubTotal) AS [Total Value]
+  FROM (SELECT (CASE WHEN SubTotal <= 99 THEN '0-99'
+                     WHEN SubTotal >= 100 AND SubTotal <= 999 THEN '100- 999'
+			         WHEN SubTotal >= 1000 AND SubTotal <= 9999 THEN '1000- 9999'
+			         WHEN SubTotal >= 10000 THEN '10000- '
+		             ELSE '' END
+			   ) AS [RANGE], SalesOrderID, SubTotal
+          FROM SAW.SalesOrderHeader
+	   ) AS T
+GROUP BY T.[RANGE]
+
+
+SELECT (CASE WHEN SubTotal <= 99 THEN '0-99'
+                     WHEN SubTotal >= 100 AND SubTotal <= 999 THEN '100- 999'
+			         WHEN SubTotal >= 1000 AND SubTotal <= 9999 THEN '1000- 9999'
+			         WHEN SubTotal >= 10000 THEN '10000- '
+		             ELSE '' END
+			   ) AS [RANGE], COUNT(SalesOrderID) AS [Num Orders], SUM(SubTotal) AS [Total Value]
+  FROM SAW.SalesOrderHeader
+GROUP BY (CASE WHEN SubTotal <= 99 THEN '0-99'
+                     WHEN SubTotal >= 100 AND SubTotal <= 999 THEN '100- 999'
+			         WHEN SubTotal >= 1000 AND SubTotal <= 9999 THEN '1000- 9999'
+			         WHEN SubTotal >= 10000 THEN '10000- '
+		             ELSE '' END
+			   )
+
+
+
+
+SELECT [RANGE] = '0- 99', CONCAT((COUNT(CASE WHEN SalesOrderID LIKE '%7%' THEN 1 END) / COUNT(SalesOrderID)) * 100, '%') AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) <= 99
+
+SELECT [RANGE] = '0- 99', 
+       CONCAT(
+	           CAST(
+			         (
+					   CAST(
+					        COUNT(CASE WHEN SalesOrderID LIKE '%6%' THEN 1 END) AS decimal(19, 4)
+						   ) / 
+                       CAST(
+					        COUNT(SalesOrderID) AS decimal(19, 4)
+						   )
+					 ) * 100 AS decimal(19, 2)
+				   ), '%'
+			 ) AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) <= 99;
+
+
+SELECT [RANGE] = '0- 99', 
+       CONCAT(
+	            CAST(
+				        CAST(COUNT(CASE WHEN SalesOrderID LIKE '%6%' THEN 1 END) AS decimal(19, 2)) / 
+                        CAST(COUNT(SalesOrderID) AS decimal(19, 2)) * 100           
+			            AS decimal(19, 2)
+					 ), '%'
+			  ) AS [Num Orders], SUM(CAST(SubTotal AS decimal(19, 4))) AS [Total Value] 
+  FROM SAW.SalesOrderHeader 
+  WHERE CAST(SubTotal AS decimal(19, 4)) <= 99
+/*
+SELECT *
+  FROM SAW.SalesOrderHeader
+WHERE CAST(SubTotal AS decimal(19, 4)) <= 99
+*/
+
+
+/*
+SELECT CAST(Subtotal AS decimal(19, 4)) AS [1]
+  FROM SAW.SalesOrderHeader
+ORDER BY [1]
+*/
+
+
+15)
+/*
+Identify the three most important cities. Show the break down of top level product category against city.
+*/
+SELECT TT1.City AS [Three Most Important Cities],  TT1.[Total Value1] AS [Total Value], TT2.Name AS [Top Level Product Category Name], TT2.[Total Value2] AS [Value]
+  FROM (SELECT * 
+          FROM (SELECT *, RANK() OVER(PARTITION BY 1 ORDER BY TTTT1.[Total Value1] DESC) AS RK1 
+                  FROM (SELECT T1.City, SUM(SubTotal) AS [Total Value1]
+                          FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
+	                        ON T1.AddressID = T2.ShipToAddressID
+                        GROUP BY T1.City
+	                   ) AS TTTT1
+	           ) AS TTT1
+        WHERE RK1 < 4
+       ) TT1 
+LEFT OUTER JOIN 
+  (SELECT T.City, T.Name, T.[Total Value2]
+     FROM (SELECT * , ROW_NUMBER() OVER(PARTITION BY T11.City ORDER BY T11.[Total Value2] DESC) AS RK2
+             FROM (SELECT T1.City, SUM(T3.OrderQty * T3.UnitPrice) AS [Total Value2], T5.Name
+                     FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
+	                   ON T1.AddressID = T2.ShipToAddressID
+	                      JOIN SAW.SalesOrderDetail T3
+	                   ON T2.SalesOrderID = T3.SalesOrderID
+	                      JOIN SAW.Product T4
+	                   ON T3.ProductID = T4.ProductID
+	                      JOIN SAW.ProductCategory T5
+	                   ON T4.ProductCategoryID = T5.ProductCategoryID
+                   GROUP BY T5.Name, T1.City
+				  ) T11
+		  ) T
+   WHERE RK2 = 1
+  ) TT2
+ON TT1.City = TT2.City
+ORDER BY [Total Value] DESC
+
+16)
+/*
+List the SalesOrderNumber for the customer 'Good Toys' 'Bike World'
+*/
+SELECT [Customer] = 'Good Toys', COUNT(T2.SalesOrderID) AS [SalesOrderNumber]
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+WHERE T1.CompanyName = 'Good Toys'  
+UNION ALL
+SELECT [Customer] = 'Bike World', COUNT(T2.SalesOrderID) AS [SalesOrderNumber]
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+WHERE T1.CompanyName = 'Bike World'
+
+method 2:
+SELECT T1.CompanyName, T2.SalesOrderID AS [SalesOrderNumber]
+  FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.CustomerID = T2.CustomerID
+WHERE T1.CompanyName IN ('Good Toys', 'Bike World')
+
+
+SELECT COUNT(SalesOrderID) AS [SalesOrderNumber]
+  FROM SAW.SalesOrderHeader
+ WHERE CustomerID IN (SELECT CustomerID FROM SAW.Customer
+                       WHERE CompanyName IN ('Good Toys', 'Bike World'))
+
+17)
+/*
+List the ProductName and the quantity of what was ordered by 'Futuristic Bikes'
+*/
+SELECT T1.Name AS [ProductName Ordered by 'Futuristic Bikes'], SUM(T2.OrderQTY) AS [Quantity]
+  FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
+    ON T1.ProductID = T2.ProductID
+	   JOIN SAW.SalesOrderHeader T3
+	ON T2.SalesOrderID = T3.SalesOrderID
+	   JOIN SAW.Customer T4
+	ON T3.CustomerID = T4.CustomerID
+WHERE T4.CompanyName = 'Futuristic Bikes'
+GROUP BY T1.Name
+
+
+18)
+/*
+List the name and addresses of companies containing the word 'Bike' (upper or lower case) and companies containing 'cycle' (upper or lower case). Ensure that the 'bike's are listed before the 'cycles's.
+*/
+SELECT [Keyword] = 'Bike', T1.CompanyName, T3.AddressLine1, REPLACE(T3.AddressLine2, 'NULL', '') AS [AddressLine2]
+  FROM SAW.Customer T1 JOIN SAW.CustomerAddress T2
+    ON T1.CustomerID = T2.CustomerID
+	   JOIN SAW.Address T3
+	ON T2.AddressID = T3.AddressID
+WHERE LOWER(T1.CompanyName) LIKE '%bike%' AND T2.AddressType = 'Main Office'
+UNION ALL
+SELECT [Keyword] = 'Cycle',T1.CompanyName, T3.AddressLine1, REPLACE(T3.AddressLine2, 'NULL', '') AS [AddressLine2]
+  FROM SAW.Customer T1 JOIN SAW.CustomerAddress T2
+    ON T1.CustomerID = T2.CustomerID
+	   JOIN SAW.Address T3
+	ON T2.AddressID = T3.AddressID
+WHERE LOWER(T1.CompanyName) LIKE '%cycle%' AND LOWER(T1.CompanyName) NOT LIKE '%bike%' AND T2.AddressType = 'Main Office'
+
+
+19)
+/*
+Show the total order value for each CountryRegion. List by value with the highest first.
+*/
+SELECT T1.CountyRegion AS [CountryRegion], SUM(T2.SubTotal) AS [Total Order Value]
+  FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
+    ON T1.AddressID = T2.ShipToAddressID
+GROUP BY T1.CountyRegion
+ORDER BY SUM(T2.SubTotal) DESC
+
+20)
+/*
+Find the best customer in each region.
+*/
+SELECT T.[Customer] AS [Best Customer], T.[CountryRegion], T.Subtotal
+  FROM(SELECT * , ROW_NUMBER() OVER (PARTITION BY T11.[CountryRegion] ORDER BY T11.[Subtotal] DESC) AS RK 
+         FROM(SELECT REPLACE(T1.Title + ' ' + T1.FirstName + ' ' + T1.MiddleName + ' ' + T1.LastName + ' ' + T1.Suffix, 'NULL', '')  AS [Customer], T3.CountyRegion AS [CountryRegion], SUM(T2.SubTotal) AS [Subtotal]
+                FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
+                  ON T1.CustomerID = T2.CustomerID
+	                 JOIN SAW.Address T3
+	              ON T2.ShipToAddressID = T3.AddressID
+			  GROUP BY REPLACE(T1.Title + ' ' + T1.FirstName + ' ' + T1.MiddleName + ' ' + T1.LastName + ' ' + T1.Suffix, 'NULL', ''), T3.CountyRegion
+			 ) T11 
+	   ) T 
+WHERE RK = 1
