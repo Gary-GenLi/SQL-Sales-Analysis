@@ -49,8 +49,8 @@ The project utilizes a dataset with the following main tables:
 - **Product:** Contains product details like `ProductID`, `Name`, `Color`, `ListPrice`, `Size`, `Weight`, `ProductModelID`, and `ProductCategoryID`.
 - **ProductModel:** Holds information about different product models and their names.
 - **ProductCategory:** Provides product category information, including `ProductCategoryID`, `ParentProductCategoryID`, and `Name`.
-- **ProductDescription:** Contains descriptions of product models in different cultures.
-- **ProductModelProductDescription:** Associates product models with their corresponding descriptions.
+- **ProductDescription:** Contains descriptions of product models in different cultures, including `ProductDescriptionID` and `Description`.
+- **ProductModelProductDescription:** Associates product models with their corresponding descriptions, including `ProductModelID`, `ProductDescriptionID` and `Culture`.
 
 ## 4. Modeling
 
