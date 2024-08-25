@@ -1,15 +1,14 @@
-1)
 /*
-Show the first name and the email address of customer with CompanyName 'Bike World'
+1)Show the first name and the email address of customer with CompanyName 'Bike World'
 */
 SELECT FirstName, EmailAddress, CompanyName
   FROM SAW.Customer
 WHERE CompanyName = 'Bike World'
 GROUP BY FirstName, EmailAddress, CompanyName
 
-2)
+
 /*
-Show the CompanyName for all customers with an address in City 'Dallas'.
+2)Show the CompanyName for all customers with an address in City 'Dallas'.
 */
 SELECT DISTINCT T1.CompanyName
   FROM SAW.Customer AS T1 JOIN SAW.CustomerAddress AS T2
@@ -29,9 +28,9 @@ GROUP BY T1.CompanyName
 */
 
 
-3)
+
 /*
-How many items with ListPrice more than $1000 have been sold?
+3)How many items with ListPrice more than $1000 have been sold?
 */
 SELECT SUM(T2.OrderQty) AS Num
   FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
@@ -43,9 +42,9 @@ WHERE ListPrice > 1000
 -- 41
 */
 
-4)
+
 /*
-Give the CompanyName of those customers with orders over $100000. Include the subtotal plus tax plus freight.
+4)Give the CompanyName of those customers with orders over $100000. Include the subtotal plus tax plus freight.
 */
 SELECT T1.CompanyName
   FROM SAW.Customer T1 JOIN SAW.SalesOrderHeader T2
@@ -59,9 +58,9 @@ GROUP BY T1.CompanyName
 -- Metropolitan Bicycle Supply
 */
 
-5)
+
 /*
-Find the number of left racing socks ('Racing Socks, L') ordered by CompanyName 'Riding Cycles'
+5)Find the number of left racing socks ('Racing Socks, L') ordered by CompanyName 'Riding Cycles'
 */
 Select CN.CompanyName, PN.OrderQty
   From (Select SalesOrderID, OrderQty
@@ -82,9 +81,9 @@ Select CN.CompanyName, PN.OrderQty
 */
 
 
-6)
+
 /*
-A "Single Item Order" is a customer order where only one item is ordered. Show the SalesOrderID and the UnitPrice for every Single Item Order.
+6)A "Single Item Order" is a customer order where only one item is ordered. Show the SalesOrderID and the UnitPrice for every Single Item Order.
 */
 SELECT sod.SalesOrderID, ProductID, UnitPrice
   FROM SalesOrderDetail sod
@@ -100,9 +99,9 @@ SELECT sod.SalesOrderID, ProductID, UnitPrice
 */
 
 
-7)
+
 /*
-Where did the racing socks go? List the product name and the CompanyName for all Customers who ordered ProductModel 'Racing Socks'.
+7)Where did the racing socks go? List the product name and the CompanyName for all Customers who ordered ProductModel 'Racing Socks'.
 */
 SELECT DISTINCT p.Name, c.CompanyName
            FROM ProductModel pm
@@ -127,9 +126,9 @@ SELECT DISTINCT p.Name, c.CompanyName
 */
 
 
-8)
+
 /*
-Show the product description for culture 'fr' for product with ProductID 736.
+8)Show the product description for culture 'fr' for product with ProductID 736.
 */
 SELECT pd.Description, pmpd.culture, P.ProductID
   FROM ProductDescription pd
@@ -143,9 +142,9 @@ SELECT pd.Description, pmpd.culture, P.ProductID
 */
 
 
-9)
+
 /*
-Use the SubTotal value in SaleOrderHeader to list orders from the largest to the smallest. For each order show the CompanyName and the SubTotal and the total weight of the order.
+9)Use the SubTotal value in SaleOrderHeader to list orders from the largest to the smallest. For each order show the CompanyName and the SubTotal and the total weight of the order.
 */
 
 SELECT T1.CompanyName, T2.SubTotal, SUM(T3.OrderQty * CAST(T4.Weight AS decimal(19,2))) AS [Total Weight]
@@ -171,9 +170,9 @@ ORDER BY T2.SubTotal DESC
 -- ...
 */
 
-10)
+
 /*
-How many products in ProductCategory 'Cranksets' have been sold to an address in 'London'?
+10)How many products in ProductCategory 'Cranksets' have been sold to an address in 'London'?
 */
 SELECT SUM(DP.salesQTY) totalProducts
         FROM (SELECT SalesOrderID, SUM(OrderQty) salesQTY
@@ -194,9 +193,9 @@ GROUP BY DP.SalesOrderID
 */
 
 
-11)
+
 /*
-For every customer with a 'Main Office' in Dallas show AddressLine1 of the 'Main Office' and AddressLine1 of the 'Shipping' address - if there is no shipping address leave it blank. Use one row per customer.
+11)For every customer with a 'Main Office' in Dallas show AddressLine1 of the 'Main Office' and AddressLine1 of the 'Shipping' address - if there is no shipping address leave it blank. Use one row per customer.
 */
 SELECT T1.CompanyName, T1.[Main office address], ISNULL(T2.[Shipping address], '') AS [Shipping address]
   FROM (SELECT T11.CompanyName, T12.CustomerID, T13.AddressLine1 AS [Main office address]
@@ -224,9 +223,9 @@ GROUP BY T1.CompanyName, T1.CustomerID, T1.[Main office address], ISNULL(T2.[Shi
 -- Unsurpassed Bikes	Po Box 8035996	
 */
 
-12)
+
 /*
-For each order show the SalesOrderID and SubTotal calculated three ways:
+12)For each order show the SalesOrderID and SubTotal calculated three ways:
 A) From the SalesOrderHeader
 B) Sum of OrderQty*UnitPrice
 C) Sum of OrderQty*ListPrice
@@ -251,9 +250,9 @@ GROUP BY oh.SalesOrderID, oh.SubTotal;
 */
 
 
-13)
+
 /*
-Show the best selling item by value.
+13)Show the best selling item by value.
 */
 
 SELECT * 
@@ -268,9 +267,9 @@ WHERE Rank=1;
 */
 
 
-14)
+
 /*
-Show how many orders are in the following ranges (in $):
+14)Show how many orders are in the following ranges (in $):
     RANGE      Num Orders      Total Value
     0-  99
   100- 999
@@ -295,9 +294,9 @@ GROUP BY X.Range;
 */
 
 
-15)
+
 /*
-Identify the three most important cities. Show the break down of top level product category against city.
+15)Identify the three most important cities. Show the break down of top level product category against city.
 */
 SELECT TT1.City AS [Three Most Important Cities], TT2.Name AS [Top Level Product Category Name], TT1.[Total Value1] AS [Total Value]
   FROM (SELECT * 
@@ -337,9 +336,9 @@ ORDER BY [Total Value] DESC
 -- Woolston	Touring Bikes	77040.15	
 */
 
-16)
+
 /*
-List the SalesOrderNumber for the customer 'Good Toys' 'Bike World'
+16)List the SalesOrderNumber for the customer 'Good Toys' 'Bike World'
 */
 SELECT SalesOrderID AS SalesOrderNumber, Customer.CompanyName
   FROM SalesOrderHeader 
@@ -353,9 +352,9 @@ WHERE CompanyName IN ('Good Toys', 'Bike World')
 */
 
 
-17)
+
 /*
-List the ProductName and the quantity of what was ordered by 'Futuristic Bikes'
+17)List the ProductName and the quantity of what was ordered by 'Futuristic Bikes'
 */
 SELECT T1.Name AS [ProductName Ordered by 'Futuristic Bikes'], SUM(T2.OrderQTY) AS [Quantity]
   FROM SAW.Product T1 JOIN SAW.SalesOrderDetail T2
@@ -374,9 +373,9 @@ GROUP BY T1.Name
 -- Classic Vest, S	3
 */
 
-18)
+
 /*
-List the name and addresses of companies containing the word 'Bike' (upper or lower case) and companies containing 'cycle' (upper or lower case). Ensure that the 'bike's are listed before the 'cycles's.
+18)List the name and addresses of companies containing the word 'Bike' (upper or lower case) and companies containing 'cycle' (upper or lower case). Ensure that the 'bike's are listed before the 'cycles's.
 */
 SELECT (CASE WHEN UPPER(CompanyName) LIKE '%BIKE%' THEN 'Bike'
         ELSE 'Cycle' END) AS Keyword,
@@ -402,9 +401,9 @@ ORDER BY Keyword
 */
 
 
-19)
+
 /*
-Show the total order value for each CountryRegion. List by value with the highest first.
+19)Show the total order value for each CountryRegion. List by value with the highest first.
 */
 SELECT T1.CountyRegion AS [CountryRegion], SUM(T2.SubTotal) AS [Total Order Value]
   FROM SAW.Address T1 JOIN SAW.SalesOrderHeader T2
@@ -418,9 +417,9 @@ ORDER BY SUM(T2.SubTotal) DESC
 -- United States	347336.69
 */
 
-20)
+
 /*
-Find the best customer in each region.
+20)Find the best customer in each region.
 */
 SELECT CountyRegion, CompanyName, SubTotal
   FROM (SELECT CountyRegion, CustomerID, SUM(SubTotal) AS 'SubTotal',
