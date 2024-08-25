@@ -30,7 +30,7 @@ The primary goal of this project is to address specific ad hoc queries and busin
 - **Data Quality:** Ensure the accuracy, consistency, and cleanliness of the data by applying data validation techniques and removing duplicates or anomalies before analysis.
 
 ### 4. Technology Stack
-- **Database Management System (DBMS):** The project is implemented on a relational database system, such as SQL Server, MySQL, or PostgreSQL.
+- **Database Management System (DBMS):** The project is implemented on a relational database system, such as SQL Server or MySQL
 - **SQL:** SQL is the primary language used for querying and managing the data. The project extensively uses DML (Data Manipulation Language) and DQL (Data Query Language) commands.
 
 ### 5. Reporting & Output
