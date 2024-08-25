@@ -1,4 +1,4 @@
-# SQL-Sales-Analysis
+# Sales-Analysis-SQL
 
 ## Table of Contents
 - [1. Introduction](#1-introduction)
