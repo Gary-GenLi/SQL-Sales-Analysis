@@ -47,7 +47,7 @@ The project utilizes a dataset with the following main tables:
 - **SalesOrderHeader:** Contains sales order information, including `SalesOrderID`, `OrderDate`, `CustomerID`, `ShipToAddressID`, `SubTotal`, `TaxAmt`, and `Freight`.
 - **SalesOrderDetail:** Contains the details of each sales order, including `SalesOrderDetailID`, `OrderQty`, `ProductID`, `UnitPrice`, and `UnitPriceDiscount`.
 - **Product:** Contains product details like `ProductID`, `Name`, `Color`, `ListPrice`, `Size`, `Weight`, `ProductModelID`, and `ProductCategoryID`.
-- **ProductModel:** Holds information about different product models and their names.
+- **ProductModel:** Holds information about different product models and their names, including `ProductModelID` and `name`.
 - **ProductCategory:** Provides product category information, including `ProductCategoryID`, `ParentProductCategoryID`, and `Name`.
 - **ProductDescription:** Contains descriptions of product models in different cultures, including `ProductDescriptionID` and `Description`.
 - **ProductModelProductDescription:** Associates product models with their corresponding descriptions, including `ProductModelID`, `ProductDescriptionID` and `Culture`.
